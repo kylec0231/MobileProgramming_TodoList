@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ToDoList</string>
+    <string name="new_ToDo_Activity">New Todo Activity</string>
+    <string name="new_note">New Note</string>
+    <string name="delete_note">Delete Note</string>
+
+    <string name="lorem">Write what to do</string>
+</resources>
