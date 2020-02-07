@@ -1,8 +1,11 @@
 package com.csce4623.ahnelson.todolist;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -22,7 +25,10 @@ import java.util.Date;
 public class DisplayTodolistUpdateActivity extends AppCompatActivity implements View.OnClickListener , DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener{
 
     private static final String TAG = "DisplayTodolistUpdateActivityTag";
-
+    public static final String Extra_Text_Title = "com.csce4623.ahnelson.todolist.DisplayTodolistUpdateActivity.Title";
+    public static final String Extra_Text_Content = "com.csce4623.ahnelson.todolist.DisplayTodolistUpdateActivity.Content";
+    public static final int AlarmPendingIntent = 10001;
+    private Calendar c;
 
     private Button buttonChannel1;
 //    private Button buttonChannel2;
@@ -160,7 +166,7 @@ public class DisplayTodolistUpdateActivity extends AppCompatActivity implements 
 
 
 
-
+        startAlarm(c);
         String messageNoteTitle = textViewTodoTitle.getText().toString();
         String messageNoteContent = textViewTodoContent.getText().toString();
         String messageDatePicker = textViewTodoDatepicker.getText().toString();
@@ -174,7 +180,8 @@ public class DisplayTodolistUpdateActivity extends AppCompatActivity implements 
         intent.putExtra("NotebooleanCompletion", messagebooleanCompletion);
 
         setResult(Activity.RESULT_OK, intent);
-        sendOnChannel1(messageNoteTitle, messageNoteContent);
+ //       sendOnChannel1(messageNoteTitle, messageNoteContent);
+ //       sendOnChannel1withAlarm(messageNoteTitle, messageNoteContent, messageDatePicker);
 
 
         finish();
@@ -210,6 +217,13 @@ public class DisplayTodolistUpdateActivity extends AppCompatActivity implements 
         minuteFinal = minute;
 
 
+        c = Calendar.getInstance();
+        c.set(Calendar.HOUR_OF_DAY, hourFinal);
+        c.set(Calendar.MINUTE, minute);
+        c.set(Calendar.SECOND, 0);
+
+      //  startAlarm(c);
+
         if(hourFinal < 10)
             hourFinal0 = "0" + String.valueOf(hourFinal);
         else
@@ -220,13 +234,40 @@ public class DisplayTodolistUpdateActivity extends AppCompatActivity implements 
         else
             minuteFinal0 = String.valueOf(minuteFinal);
 
-        textViewTodoDatepicker.setText(monthFinal + "/" + dayFinal + "/" + yearFinal + "/ " + hourFinal0 + ":" + minuteFinal0);
+        textViewTodoDatepicker.setText(monthFinal + "/" + dayFinal + "/" + yearFinal + " " + hourFinal0 + ":" + minuteFinal0);
 
     }
 
     public void sendOnChannel1(String title, String message){
         NotificationCompat.Builder nb = mNotificationHelper.getChannel1Notification(title, message);
         mNotificationHelper.getManager().notify(1, nb.build());
+
+    }
+
+
+    public void sendOnChannel1withAlarm(String title, String message, String deadLineDate){
+
+
+//        Intent intentAlarm = new Intent(this, MyBroadcastReceiver.class)
+
+        NotificationCompat.Builder nb = mNotificationHelper.getChannel1Notification(title, message);
+        mNotificationHelper.getManager().notify(1, nb.build());
+
+    }
+
+    public void startAlarm(Calendar c) {
+
+        String messageNoteTitle = textViewTodoTitle.getText().toString();
+        String messageNoteContent = textViewTodoContent.getText().toString();
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, MyBroadcastReceiver.class);
+        intent.putExtra(Extra_Text_Title, messageNoteTitle);
+        intent.putExtra(Extra_Text_Content, messageNoteContent);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, AlarmPendingIntent, intent, 0);
+
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
+
 
     }
 }
